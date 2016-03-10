@@ -1,0 +1,6 @@
+Plugin Name -- Members for Caldera Forms
+Text domain -- cf-members
+Function prefix -- cf_members
+Class prefix - n/a
+Root namespace -- n/a
+Filter Prefix -- n/a
