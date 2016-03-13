@@ -21,7 +21,9 @@
  * @return array	Array of registered processors
  */
 function cf_members_register($processors){
-
+	if( ! class_exists( 'Caldera_Forms_Processor_Load') ){
+		return $processors;
+	}
 	$processors['cf_members'] = array(
 		"name"				=>	__( 'Members for Caldera Forms', 'cf-members'),
 		"description"		=>	__( 'Simple membership plugin, powered by Caldera Forms', 'cf-members'),
@@ -29,6 +31,7 @@ function cf_members_register($processors){
 		"author"			=>	'Josh Pollock for CalderaWP LLC',
 		"author_url"		=>	'https://CalderaWP.com',
 		"pre_processor"		=>	'cf_members_pre_process',
+		"post_processor" => 'cf_members_post_process',
 		"template"			=>	CF_MEMBERS_PATH . "includes/config.php",
 
 	);
@@ -38,26 +41,108 @@ function cf_members_register($processors){
 }
 
 /**
- * Pre-Proccess Members for Caldera Forms proccessor
+ * Post process -- used to save details about plan creation
  *
  * @since 0.0.1
  *
  * @param array $config Processor config
  * @param array $form Form config
+ * @param string $process_id Process ID
+ */
+function cf_members_post_process( $config, $form, $process_id ){
+	$entry_id = Caldera_Forms::get_field_data( '_entry_id', $form );
+	global $transdata;
+	$values = $transdata[ $process_id ][ 'values' ];
+	$member = cf_member_class( $values[ 'plan_slug' ], wp_get_current_user() );
+	$details = [
+		'entry_id' => $entry_id,
+		'form_id' => $form[ 'ID' ],
+		'created' => current_time( 'mysql' ),
+		'process_id' => $process_id
+	];
+
+	/**
+	 * Filter details to save for new plan
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $details Details to save
+	 */
+	apply_filters( 'cf_members_create_details', $details );
+	$member->add_details( $details );
+
+}
+
+/**
+ * Pre-Process -- add member to plan
+ *
+ * @since 0.0.1
+ *
+ * @param array $config Processor config
+ * @param array $form Form config
+ * @param string $process_id Process ID
  *
  * @return array
  */
-function cf_members_pre_process( $config, $form ) {
+function cf_members_pre_process( $config, $form, $process_id ) {
 	if( ! get_current_user_id() ) {
 		return array(
-			'tyope' => 'error',
-			'note' => __( 'You must login to register', 'cf-members' )
+			'type' => 'error',
+			'note' => __( 'You must be logged in', 'cf-members' )
 		);
 	}
 	$proccesor = new Caldera_Forms_Processor_Get_Data( $config, $form, cf_members_fields() );
-	$values = $proccesor->get_values();
-	update_user_meta( get_current_user_id(), cf_members_plan_key( $values[ 'plan_slug' ] ), true );
 
+	$values = $proccesor->get_values();
+	global $transdata;
+	$transdata[ $process_id ][ 'values' ] = $values;
+
+	$member = cf_member_class( $values[ 'plan_slug' ], wp_get_current_user() );
+	$member->add();
+
+}
+
+/**
+ * Include classes
+ *
+ * @since 0.1.0
+ */
+function cf_members_include_classes(){
+	if( ! did_action( 'cf_members_include_classes')) {
+		include dirname( __FILE__ ) . '/class-cf-member.php';
+		include dirname( __FILE__ ) . '/class-cf-members.php';
+
+		/**
+		 * Runs after classes are included
+		 *
+		 * @since 0.1.0
+		 */
+		do_action( 'cf_members_include_classes' );
+	}
+
+}
+
+/**
+ * @param $plan_slug
+ * @param $user
+ *
+ * @return \CF_Member|void
+ */
+function cf_member_class( $plan_slug, $user ){
+	cf_members_include_classes();
+	if( is_numeric( $user ) ){
+		$user = get_user_by( 'ID', $user );
+	}
+
+	if( is_a( $user, 'WP_User' ) ){
+		$member = CF_Members::instance()->get_member( $plan_slug );
+		if( ! $member ){
+			$member = new CF_Member( $plan_slug, $user );
+			CF_Members::instance()->add_member( $member );
+		}
+
+		return $member;
+	}
 }
 
 /**
@@ -154,23 +239,6 @@ function cf_members_fields() {
 	);
 }
 
-
-/**
- * Proccess Members for Caldera Forms proccessor
- *
- * @since 0.1.0
- *
- * @param array $config Processor config
- * @param array $form Form config
- *
- * @return array
- */
-function cf_members_process( $config, $form ) {
-
-
-}
-
-
 /**
  * Initializes the licensing system
  *
@@ -183,7 +251,7 @@ function cf_members_init_license(){
 	$plugin = array(
 		'name'		=>	'Members for Caldera Forms',
 		'slug'		=>	'members-for-caldera-forms',
-		'url'		=>	'https://calderawp.com/',
+		'url'		=>	'https://calderawp.com/downlaods/members-for-caldera-forms',
 		'version'	=>	CF_MEMBERS_VER,
 		'key_store'	=>  'cf_members_license',
 		'file'		=>  CF_MEMBERS_CORE,
