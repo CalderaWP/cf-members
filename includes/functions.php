@@ -31,7 +31,7 @@ function cf_members_register($processors){
 		"author"			=>	'Josh Pollock for CalderaWP LLC',
 		"author_url"		=>	'https://CalderaWP.com',
 		"pre_processor"		=>	'cf_members_pre_process',
-		"post_processor" => 'cf_members_post_process',
+		"processor" => 'cf_members_post_process',
 		"template"			=>	CF_MEMBERS_PATH . "includes/config.php",
 
 	);
@@ -55,6 +55,8 @@ function cf_members_post_process( $config, $form, $process_id ){
 	$values = $transdata[ $process_id ][ 'values' ];
 	$member = cf_member_class( $values[ 'plan_slug' ], wp_get_current_user() );
 	$details = [
+		'plan_slug' => $transdata[ $process_id ][ 'values' ][ 'plan_slug' ],
+		'plan_name' => $transdata[ $process_id ][ 'values' ][ 'plan_name' ],
 		'entry_id' => $entry_id,
 		'form_id' => $form[ 'ID' ],
 		'created' => current_time( 'mysql' ),
@@ -71,6 +73,7 @@ function cf_members_post_process( $config, $form, $process_id ){
 	apply_filters( 'cf_members_create_details', $details );
 	$member->add_details( $details );
 
+	return $details;
 }
 
 /**
@@ -154,8 +157,13 @@ function cf_member_class( $plan_slug, $user ){
  *
  * @return string
  */
-function cf_members_plan_key( $slug ){
-	return md5( 'cf_members_plan_' . $slug );
+function cf_members_plan_key( $slug ) {
+	$slug = 'cfmempl_' . $slug;
+	if ( 191 < mb_strlen( $slug ) ) {
+		$slug = substr( $slug, 191 );
+	}
+
+	return $slug;
 }
 
 /**
@@ -175,10 +183,10 @@ function cf_members_has_plan( $slug, $user_id = false ){
 	}
 
 	if( 0 < $user_id ) {
-		return get_user_meta( $user_id, cf_members_plan_key( $slug ), true );
+		$has_plan = (bool) get_user_meta( $user_id, cf_members_plan_key( $slug ), true );
 	}
 
-	return false;
+	return apply_filters( 'cf_members_has_plan', $has_plan, $slug, $user_id );
 
 }
 
@@ -195,7 +203,7 @@ function cf_members_has_plan( $slug, $user_id = false ){
 function cf_members_plan_shortcode( $atts, $content = '' ) {
 	$atts = shortcode_atts( array(
 		'plan' => '',
-		'user_id' => false,
+		'user_id' => get_current_user_id(),
 		'sign_up' => false,
 	), $atts, 'cf_members' );
 
@@ -205,7 +213,19 @@ function cf_members_plan_shortcode( $atts, $content = '' ) {
 		if( is_string( $atts[ 'sign_up' ] ) && is_array( $form = Caldera_Forms::get_form( $atts[ 'sign_up'] ) ) ){
 			return $form;
 		}
-		return apply_filters( 'cf_members_content_restriction_message', $atts[ 'plan' ], $atts[ 'user_id' ] );
+
+		$message = esc_html__( 'Sorry this content is restricted to members only.', 'cf-members' );
+
+		/**
+		 * Change default not member/can't see content message
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param string $message Message to show
+		 * @param string $plan Slug for plan content is from
+		 * @param int $user_id ID of user who content is being restricted from
+		 */
+		return apply_filters( 'cf_members_content_restriction_message', $message, $atts[ 'plan' ], $atts[ 'user_id' ] );
 	}
 }
 add_shortcode( 'cf_members', 'cf_members_plan_shortcode' );
@@ -231,7 +251,7 @@ function cf_members_fields() {
 		array(
 			'id'   => 'plan_slug',
 			'label' => __( 'Plan Slug', 'cf-members' ),
-			'desc' => __( 'Slug used to reference plan in .', 'cf-members' ),
+			'desc' => __( 'Slug used to reference plan with.', 'cf-members' ),
 			'type' => 'text',
 			'required' => true,
 			'magic' => true,

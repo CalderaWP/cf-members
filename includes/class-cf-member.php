@@ -141,7 +141,7 @@ class CF_Member {
 	 * @since 0.1.0
 	 */
 	protected function write_user_meta(){
-		update_option( $this->user->ID, cf_members_plan_key( $this->plan ), true );
+		update_user_meta( $this->user->ID, cf_members_plan_key( $this->plan ), true );
 	}
 
 	/**

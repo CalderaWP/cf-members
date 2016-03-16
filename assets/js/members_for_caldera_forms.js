@@ -8,6 +8,8 @@
  
 ( function( window, undefined ) {
 	'use strict';
+    jQuery( document ).ready( function ( $ ) {
 
+    } );
 
 } )( this );

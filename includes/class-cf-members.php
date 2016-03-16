@@ -53,7 +53,7 @@ class CF_Members {
 	}
 
 	/**
-	 * Add member object to the stroe
+	 * Add member object to the store
 	 *
 	 * @since 0.1.0
 	 *

@@ -12,4 +12,18 @@
 
 if ( class_exists( 'Caldera_Forms_Processor_UI' )  ) {
 	echo Caldera_Forms_Processor_UI::config_fields( cf_members_fields() );
+	?>
+	<script>
+		(function ( window, undefined ) {
+			'use strict';
+			jQuery( document ).ready( function ( $ ) {
+			$( '#plan_slug' ).on( 'change', function () {
+					$( this ).val( $( this ).val().replace( /[^a-z0-9_-]/gi, '' ).toLowerCase() );
+			} );
+
+			} );
+		})();
+	</script>
+<?php
 }
+
