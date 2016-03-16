@@ -18,7 +18,7 @@ if ( class_exists( 'Caldera_Forms_Processor_UI' )  ) {
 			'use strict';
 			jQuery( document ).ready( function ( $ ) {
 			$( '#plan_slug' ).on( 'change', function () {
-					$( this ).val( $( this ).val().replace( /[^a-z0-9_-]/gi, '' ).toLowerCase() );
+					$( this ).val( $( this ).val().replace( /[^'%'{}a-z0-9_-]/gi, '' ).toLowerCase() );
 			} );
 
 			} );

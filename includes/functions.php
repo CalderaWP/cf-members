@@ -255,8 +255,24 @@ function cf_members_fields() {
 			'type' => 'text',
 			'required' => true,
 			'magic' => true,
+			'sanatize' => 'cf_members_sanitize_plan_slug_save',
 		),
 	);
+}
+
+/**
+ * Prepare plan slug for DB when saving.
+ *
+ * @since 0.1.0
+ *
+ * @param string $value
+ *
+ * @return string|\WP_Error
+ */
+function cf_members_sanitize_plan_slug_save( $value ){
+	$value = preg_replace( "/[^'%'{}a-z0-9_-]/", '', $value );
+	return $value;
+
 }
 
 /**
@@ -293,11 +309,18 @@ function cf_members_init_license(){
  *
  * @return array
  */
-function cf_members_example_form( $forms ) {
-	$forms['cf_members']	= array(
-		'name'	=>	__( 'Members for Caldera Forms Example', 'cf-members' ),
+function cf_members_examples( $forms ) {
+	$forms['cf_members_basics']	= array(
+		'name'	=>	__( 'Simple Membership Form', 'cf-members' ),
 		'template'	=>	include CF_MEMBERS_PATH . 'includes/templates/example.php'
 	);
+
+	if( defined( CF_USERS_VER ) ){
+		$forms[ 'example-with-user-addon' ] = array(
+			'name'	=>	__( 'Mambership form with login and registration.', 'cf-members' ),
+			'template' => include CF_MEMBERS_PATH . 'includes/example-with-user-addon.php'
+		);
+	}
 
 	return $forms;
 

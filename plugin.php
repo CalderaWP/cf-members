@@ -85,7 +85,7 @@ function cf_members_init() {
 		add_action( 'admin_init', 'cf_members_init_license' );
 
 		//add our example form
-		//add_filter( 'caldera_forms_get_form_templates', 'cf_braintree_example_form' );
+		add_filter( 'caldera_forms_get_form_templates', 'cf_members_examples' );
 
 	}
 
