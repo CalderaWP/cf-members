@@ -38,14 +38,11 @@ define( 'CF_MEMBERS_URL',     plugin_dir_url( __FILE__ ) );
 define( 'CF_MEMBERS_PATH',    dirname( __FILE__ ) . '/' );
 define( 'CF_MEMBERS_CORE',    dirname( __FILE__ )  );
 
+//make plugin go
+add_action( 'init', 'cf_members_init' );
 
 /**
- * Software Licensing
- */
-// filter to initialize the license system
-add_action( 'init', 'cf_members_init' );
-/**
- * Initializes the licensing system
+ * Load plugin, if possible
  *
  * @since 1.1.0
  */
@@ -84,7 +81,7 @@ function cf_members_init() {
 		// filter to initialize the license system
 		add_action( 'admin_init', 'cf_members_init_license' );
 
-		//add our example form
+		//add our example forms
 		add_filter( 'caldera_forms_get_form_templates', 'cf_members_examples' );
 
 	}

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Singleton to hold instances of the CF_Member class
  *
@@ -66,6 +65,8 @@ class CF_Members {
 
 	/**
 	 * Get member of object from store
+	 *
+	 * @since 0.1.0
 	 *
 	 * @param string $plan_slug
 	 * @param array $proccesor_details Optional. Details from processor

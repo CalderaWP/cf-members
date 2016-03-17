@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Class for managing a user in this plan
  *
