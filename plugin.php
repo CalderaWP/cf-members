@@ -3,7 +3,7 @@
  * Plugin Name: Members for Caldera Forms
  * Plugin URI:  https://CalderaWP.com/downloads/cf-members
  * Description: Simple membership plugin, powered by Caldera Forms
- * Version:     0.1.0
+ * Version: 1.0.0
  * Author:      Josh Pollock for CalderaWP LLC
  * Author URI:  https://CalderaWP.com
  * License:     GPLv2+
@@ -33,7 +33,7 @@
 /**
  * Define constants
  */
-define( 'CF_MEMBERS_VER', '0.1.0' );
+define( 'CF_MEMBERS_VER', '1.0.0' );
 define( 'CF_MEMBERS_URL',     plugin_dir_url( __FILE__ ) );
 define( 'CF_MEMBERS_PATH',    dirname( __FILE__ ) . '/' );
 define( 'CF_MEMBERS_CORE',    dirname( __FILE__ )  );
